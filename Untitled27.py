@@ -151,6 +151,59 @@ plt.legend()
 plt.show()
 
 
+import numpy as np
+import matplotlib.pyplot as plt
+from statsmodels.nonparametric.kernel_regression import KernelReg  # Fixed spelling
+
+np.random.seed(42)
+x = np.linspace(0, 10, 100)
+y = np.sin(x) + np.random.normal(scale=0.1, size=100)
+
+plt.figure(figsize=(10,6))
+for bw in [0.1, 0.5, 1, 5]:  # Changed from [0,0.5,1,5] as bandwidth=0 would cause problems
+    kr = KernelReg(y, x, 'c', reg_type='ll', bw=[bw])  # Fixed spelling
+    plt.plot(x, kr.fit(x)[0], label=f'bandwidth={bw}')  # Added equals sign for better labeling
+    
+plt.scatter(x, y, c='k', s=10, label='data')
+plt.legend()
+plt.show()
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import fetch_california_housing
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.metrics import mean_squared_error, r2_score
+
+def train_plot(features, target, model, title, x_label, y_label):
+    X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    
+    plt.scatter(X_test, y_test, c="blue", label="Actual")
+    plt.scatter(X_test, y_pred, c="red", label="Predicted")
+    plt.xlabel(x_label); plt.ylabel(y_label); plt.title(title)
+    plt.legend(); plt.show()
+    
+    print(f"{title}\nMSE: {mean_squared_error(y_test, y_pred):.2f}\nR²: {r2_score(y_test, y_pred):.2f}")
+
+if __name__ == "__main__":
+    housing = fetch_california_housing(as_frame=True)
+    train_plot(housing.data[["AveRooms"]], housing.target, LinearRegression(),
+               "Linear Regression - California Housing",
+               "Average Rooms", "Home Value ($100k)")
+    
+    cars = pd.read_csv("https://archive.ics.uci.edu/ml/machine-learning-databases/auto-mpg/auto-mpg.data",
+                      sep='\s+', names=["mpg","cylinders","displacement","horsepower",
+                                      "weight","acceleration","year","origin"],
+                      na_values="?").dropna()
+    train_plot(cars[["displacement"]], cars["mpg"],
+              make_pipeline(PolynomialFeatures(2), StandardScaler(), LinearRegression()),
+              "Polynomial Regression - Auto MPG",
+              "Engine Displacement", "Miles Per Gallon")
+
 # In[ ]:
 
 
