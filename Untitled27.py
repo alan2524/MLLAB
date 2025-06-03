@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[9]:
-
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,55 +9,6 @@ plt.figure(figsize=(12,10))
 df.hist(bins=30,figsize=(12,10),layout=(3,3))
 plt.tight_layout()
 plt.show()
-
-plt.figure(figsize=(12, 10))
-sns.boxplot(data=df, orient='v')
-plt.xticks(rotation=45)
-plt.title("Box Plots of All Features")
-plt.tight_layout()
-plt.show()
-
-
-# In[15]:
-
-
-import pandas as pd
-import seaborn as sns
-from sklearn.datasets import fetch_california_housing
-
-# Load data and create DataFrame
-df = pd.DataFrame(
-    fetch_california_housing().data,
-    columns=fetch_california_housing().feature_names
-)
-
-# Correlation heatmap (single line)
-sns.heatmap(df.corr(), annot=True, cmap='coolwarm').set_title("Correlation Matrix")
-
-# Pair plot (single line)
-sns.pairplot(df)
-
-
-# In[16]:
-
-
-import pandas as pd
-import seaborn as sns
-from sklearn.datasets import fetch_california_housing
-
-# Load data
-df = pd.DataFrame(
-    fetch_california_housing().data,
-    columns=fetch_california_housing().feature_names
-)
-
-# --- Histograms (unchanged) ---
-df.hist(bins=30, figsize=(12, 10), layout=(3, 3))
-plt.suptitle("Histograms of California Housing Features", y=1.02)
-plt.tight_layout()
-plt.show()
-
-# --- Individual Box Plots ---
 plt.figure(figsize=(12, 10))
 for i,column in enumerate(df.columns,1):
     plt.subplot(3,3,i)
@@ -73,61 +18,54 @@ plt.tight_layout()
 plt.show()
 
 
-# In[21]:
+
+import pandas as pd
+import seaborn as sns
+from sklearn.datasets import fetch_california_housing
+df = pd.DataFrame(
+    fetch_california_housing().data,
+    columns=fetch_california_housing().feature_names
+)
+sns.heatmap(df.corr(), annot=True, cmap='coolwarm').set_title("Correlation Matrix")
+sns.pairplot(df)
+
+
 
 
 import seaborn as sns
 from sklearn.decomposition import PCA
 from sklearn.datasets import load_iris
 from sklearn.preprocessing import StandardScaler
-
-# Load, scale, and transform in 3 lines
 df = pd.DataFrame(load_iris().data, columns=load_iris().feature_names)
 pca_df = pd.DataFrame(PCA(n_components=2).fit_transform(StandardScaler().fit_transform(df)), 
                      columns=['PC1', 'PC2']).assign(Target=load_iris().target)
 
-# Plot in 1 line
 sns.scatterplot(x='PC1', y='PC2', hue='Target', data=pca_df).set(
     xlabel='Principal Component 1', ylabel='Principal Component 2', title='PCA of Iris Dataset')
 
 
-# In[30]:
-
 
 import pandas as pd
 import numpy as np
-def find_s_algorithm(data):
-    X = data.iloc[:, :-1].values  
-    hypothesis = np.array(['?' for _ in range(X.shape[1])])
-    for i, row in enumerate(X):
-        if y[i] == 'Yes':  
+
+def find_s(data):
+    X, y = data.iloc[:, :-1], data.iloc[:, -1]
+    hypothesis = ['?'] * X.shape[1]
+
+    for i in range(len(X)):
+        if y[i] == 'Yes':
+            instance = X.iloc[i].values
             if '?' in hypothesis:
-                hypothesis = row.copy() 
+                hypothesis = instance
             else:
-                for j in range(len(hypothesis)):
-                    if hypothesis[j] != row[j]:
-                        hypothesis[j] = '?'
+                hypothesis = [h if h == x else '?' for h, x in zip(hypothesis, instance)]
+
     return hypothesis
+
 data = pd.read_csv('training_data.csv')
-hypothesis = find_s_algorithm(data)
-print("The most specific hypothesis is:", hypothesis)
+print("The most specific hypothesis is:", find_s(data))
 
 
-# In[28]:
-
-
-from sklearn.datasets import load_breast_cancer
-from sklearn.tree import DecisionTreeClassifier, plot_tree
-data = load_breast_cancer()
-X_train, X_test, y_train, y_test = train_test_split(data.data, data.target, test_size=0.2, random_state=42)
-clf = DecisionTreeClassifier(random_state=42).fit(X_train, y_train)
-print(f"Accuracy: {clf.score(X_test, y_test)*100:.2f}%")
-print(f"Prediction: {'Benign' if clf.predict([data.data[0]])[0] else 'Malignant'}")
-plot_tree(clf, filled=True, feature_names=list(data.feature_names), class_names=list(data.target_names))
-plt.show()
-
-
-# In[31]:
 
 
 import numpy as np
@@ -153,20 +91,21 @@ plt.show()
 
 import numpy as np
 import matplotlib.pyplot as plt
-from statsmodels.nonparametric.kernel_regression import KernelReg  # Fixed spelling
+from statsmodels.nonparametric.kernel_regression import KernelReg 
 
 np.random.seed(42)
 x = np.linspace(0, 10, 100)
 y = np.sin(x) + np.random.normal(scale=0.1, size=100)
 
 plt.figure(figsize=(10,6))
-for bw in [0.1, 0.5, 1, 5]:  # Changed from [0,0.5,1,5] as bandwidth=0 would cause problems
-    kr = KernelReg(y, x, 'c', reg_type='ll', bw=[bw])  # Fixed spelling
-    plt.plot(x, kr.fit(x)[0], label=f'bandwidth={bw}')  # Added equals sign for better labeling
+for bw in [0.1, 0.5, 1, 5]:  
+    kr = KernelReg(y, x, 'c', reg_type='ll', bw=[bw])  
+    plt.plot(x, kr.fit(x)[0], label=f'bandwidth={bw}') 
     
 plt.scatter(x, y, c='k', s=10, label='data')
 plt.legend()
 plt.show()
+
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -204,7 +143,60 @@ if __name__ == "__main__":
               "Polynomial Regression - Auto MPG",
               "Engine Displacement", "Miles Per Gallon")
 
-# In[ ]:
+
+import numpy as np, matplotlib.pyplot as plt
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+
+data = load_breast_cancer()
+X, y = data.data, data.target
+Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.2, random_state=42)
+
+clf = DecisionTreeClassifier(random_state=42).fit(Xtr, ytr)
+print(f"Accuracy: {clf.score(Xte, yte)*100}%")
+
+plt.figure(figsize=(12, 8))
+plot_tree(clf, filled=True)
+plt.show()
+
+sample = np.array([[14, 20.5, 90, 600, 0.1, 0.2, 0.3, 0.15, 0.25, 0.05,
+                    0.5, 1, 3, 40, 0.005, 0.02, 0.02, 0.01, 0.02, 0.003,
+                    16, 25, 100, 800, 0.15, 0.3, 0.4, 0.2, 0.3, 0.07]])
+print("Prediction:", data.target_names[clf.predict(sample)[0]])
+
+
+import numpy as np
+from sklearn.datasets import fetch_olivetti_faces
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score
+
+data = fetch_olivetti_faces(random_state=42)
+X, y = data.data, data.target
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+model = GaussianNB()
+model.fit(X_train, y_train)
+pred = model.predict(X_test)
+
+print(f"Accuracy: {accuracy_score(y_test, pred) * 100}%")
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_breast_cancer
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+X=StandardScaler().fit_transform(load_breast_cancer().data)
+kmeans=KMeans(n_clusters=2).fit(X)
+x_pca=PCA(n_components=2).fit_transform(X)
+centroids=PCA(n_components=2).fit(X).transform(kmeans.cluster_centers_)
+plt.scatter(*x_pca.T,c=kmeans.labels_,cmap="viridis")
+plt.scatter(*centroids.T, c="red",s=200,marker="x")
+plt.show()
+
 
 
 
